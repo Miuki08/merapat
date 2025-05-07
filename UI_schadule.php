@@ -8,23 +8,42 @@ if (!isset($_SESSION['user_id'])) {
 
 // Cek apakah role user adalah customer
 if ($_SESSION['role'] != 'customer') {
-    // Jika bukan customer, redirect ke dashboard yang sesuai
     if ($_SESSION['role'] == 'manager' || $_SESSION['role'] == 'officer') {
         header("Location: dasboard.php");
     } else {
-        // Role tidak dikenali, redirect ke halaman login
         header("Location: user_login_register.php");
     }
     exit();
 }
 
-$name = $_SESSION['name'];
-$user_id = $_SESSION['user_id']; // Ambil user_id dari session
-// Include class booking
+// Include required classes
 require_once 'booking.php';
-// Buat objek booking
+require_once 'payment.php';
+
+// Handle payment notifications
+$notification = '';
+$alert_class = '';
+if (isset($_GET['payment'])) {
+    switch ($_GET['payment']) {
+        case 'success':
+            $notification = "Pembayaran berhasil ditambahkan!";
+            $alert_class = "alert-success";
+            break;
+        case 'deleted':
+            $notification = "Pembayaran berhasil dihapus!";
+            $alert_class = "alert-info";
+            break;
+    }
+}
+
+$name = $_SESSION['name'];
+$user_id = $_SESSION['user_id'];
+
+// Initialize classes
 $booking = new booking();
-// Ambil data booking berdasarkan user_id
+$payment = new Payment();
+
+// Get bookings with payment status
 $result = $booking->getBookingsByUserId($user_id);
 ?>
 <!DOCTYPE html>
@@ -107,6 +126,15 @@ $result = $booking->getBookingsByUserId($user_id);
 
         .sidebar.open + .main-content {
             margin-left: 250px;
+        }
+
+        /* Notification Alert */
+        .notification-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1100;
+            width: 300px;
         }
 
         /* Card Styling */
@@ -211,6 +239,42 @@ $result = $booking->getBookingsByUserId($user_id);
             color: #7f8c8d;
             font-size: 1.2em;
         }
+
+        /* Kadang Gak Di ACC Admin> */
+        .carto.cancelled {
+            opacity: 0.7;
+            background-color: #f5f5f5;
+        }
+
+        .carto.cancelled img {
+            filter: grayscale(80%);
+        }
+
+        .carto.cancelled h2,
+        .carto.cancelled p span {
+            color: #95a5a6 !important;
+        }
+
+        .delete-btn {
+            background-color: #7f8c8d;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .delete-btn:hover {
+            background-color: #6c7a7d;
+        }
+
+        .delete-btn i {
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -226,6 +290,16 @@ $result = $booking->getBookingsByUserId($user_id);
             </ul>
         </div>
     </header>
+
+    <?php if (!empty($notification)): ?>
+    <div class="notification-container">
+        <div class="alert <?php echo $alert_class; ?> alert-dismissible fade show" role="alert">
+            <?php echo $notification; ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <nav class="sidebar">
         <ul class="nav flex-column">
             <li class="nav-item">
@@ -248,15 +322,28 @@ $result = $booking->getBookingsByUserId($user_id);
             </li>
         </ul>
     </nav>
+
     <section class="main-content">
         <div class="jadwal">
             <?php
             if ($result->num_rows > 0) {
                 while ($row = $result->fetch_assoc()) {
                     $status = $row['status'];
-                    $status_color = ($status == 'confirmed') ? '#27ae60' : '#e67e22';
+                    $is_paid = $payment->isPaid($row['booking_id']);
+                    
+                    // Set status colors and classes
+                    if ($status == 'confirmed') {
+                        $status_color = '#27ae60';
+                        $card_class = 'carto';
+                    } elseif ($status == 'pending') {
+                        $status_color = '#e67e22';
+                        $card_class = 'carto';
+                    } else {
+                        $status_color = '#95a5a6';
+                        $card_class = 'carto cancelled';
+                    }
             ?>
-            <div class="carto">
+            <div class="<?php echo $card_class; ?>">
                 <div class="status-indicator" style="background-color: <?php echo $status_color; ?>;"></div>
                 <img src="rm2.jpg" alt="Ruang Meeting">
                 <div class="carto-content">
@@ -275,17 +362,50 @@ $result = $booking->getBookingsByUserId($user_id);
                     </p>
                     <p>
                         <span>Status:</span>
-                        <span style="color: <?php echo $status_color; ?>;"><?php echo htmlspecialchars($status); ?></span>
+                        <span style="color: <?php echo $status_color; ?>; font-weight: 600;">
+                            <?php 
+                            echo htmlspecialchars($status); 
+                            if ($status == 'confirmed') {
+                                echo ' <i class="fas fa-check-circle"></i>';
+                            } elseif ($status == 'cancelled') {
+                                echo ' <i class="fas fa-times-circle"></i>';
+                            } else {
+                                echo ' <i class="fas fa-clock"></i>';
+                            }
+                            ?>
+                        </span>
                     </p>
+                    <p>
+                        <span>Status Pembayaran:</span>
+                        <span style="color: <?php echo $is_paid ? '#27ae60' : '#e74c3c'; ?>; font-weight: 600;">
+                            <?php 
+                            echo $is_paid ? 'Lunas' : 'Belum Dibayar'; 
+                            echo $is_paid ? ' <i class="fas fa-check-circle"></i>' : ' <i class="fas fa-exclamation-circle"></i>';
+                            ?>
+                        </span>
+                    </p>
+                    
                     <?php if ($status == 'pending') { ?>
                         <button class="cancel-btn" onclick="deleteBooking(<?php echo $row['booking_id']; ?>)">
                             <i class="fas fa-times"></i>
                             Batalkan Pesanan
                         </button>
                     <?php } elseif ($status == 'confirmed') { ?>
-                        <button class="payment-btn" onclick="goToPayment(<?php echo $row['booking_id']; ?>)">
-                            <i class="fas fa-credit-card"></i>
-                            Menuju Pembayaran
+                        <?php if ($is_paid) { ?>
+                            <button class="payment-btn" onclick="viewBookingDetail(<?php echo $row['booking_id']; ?>)">
+                                <i class="fas fa-eye"></i>
+                                Lihat Detail Pemesanan
+                            </button>
+                        <?php } else { ?>
+                            <button class="payment-btn" onclick="goToPayment(<?php echo $row['booking_id']; ?>)">
+                                <i class="fas fa-credit-card"></i>
+                                Menuju Pembayaran
+                            </button>
+                        <?php } ?>
+                    <?php } elseif ($status == 'cancelled') { ?>
+                        <button class="delete-btn" onclick="deleteBookingPermanently(<?php echo $row['booking_id']; ?>)">
+                            <i class="fas fa-trash"></i>
+                            Hapus Pesanan
                         </button>
                     <?php } ?>
                 </div>
@@ -306,11 +426,18 @@ $result = $booking->getBookingsByUserId($user_id);
             const sidebar = document.querySelector('.sidebar');
             const mainContent = document.querySelector('.main-content');
 
-            // Toggle sidebar
             sidebarToggle.addEventListener('click', function() {
                 sidebar.classList.toggle('open');
                 mainContent.classList.toggle('open');
             });
+
+            const notificationAlert = document.querySelector('.alert');
+            if (notificationAlert) {
+                setTimeout(() => {
+                    notificationAlert.classList.remove('show');
+                    notificationAlert.classList.add('fade');
+                }, 5000);
+            }
         });
 
         function deleteBooking(bookingId) {
@@ -319,8 +446,18 @@ $result = $booking->getBookingsByUserId($user_id);
             }
         }
 
+        function deleteBookingPermanently(bookingId) {
+            if (confirm("Apakah Anda yakin ingin menghapus permanen pesanan ini?")) {
+                window.location.href = 'booking_action.php?action=delete&booking_id=' + bookingId;
+            }
+        }
+
         function goToPayment(bookingId) {
             window.location.href = `UI_formpayment.php?booking_id=${bookingId}`;
+        }
+
+        function viewBookingDetail(bookingId) {
+            window.location.href = `booking_detail.php?booking_id=${bookingId}`;
         }
     </script>
 </body>

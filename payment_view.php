@@ -256,6 +256,7 @@ $name = $_SESSION['name'];
                             <th>Booking Period</th>
                             <th>Payment Date</th>
                             <th>Payment Method</th>
+                            <th>Bukti Pembayaran</th>
                             <th class="rounded-end">Aksi</th>
                         </tr>
                     </thead>
@@ -263,6 +264,9 @@ $name = $_SESSION['name'];
                         <?php
                             require_once 'payment.php';
                             $payment = new Payment();
+
+                            // penyusun id
+                            $id = 1;
 
                             // Check if there's a search keyword
                             $keyword = isset($_GET['keyword']) ? $_GET['keyword'] : '';
@@ -275,7 +279,7 @@ $name = $_SESSION['name'];
                             while ($result = $data->fetch_assoc()) {
                         ?>
                         <tr class="table-row-hover">
-                            <td><?= htmlspecialchars($result['payment_id']); ?></td>
+                            <td><?= htmlspecialchars($id++); ?></td>
                             <td><?= htmlspecialchars($result['name']); ?></td>
                             <td><?= htmlspecialchars($result['room_name']); ?></td>
                             <td>
@@ -289,10 +293,19 @@ $name = $_SESSION['name'];
                                 </span>
                             </td>
                             <td>
+                                <?php if (!empty($result['user_file'])): ?>
+                                    <a href="download_payment.php?file=<?= urlencode($result['user_file']) ?>" class="btn btn-action btn-sm" data-bs-toggle="tooltip" title="Unduh Bukti Pembayaran">
+                                        <i class="fas fa-download"></i> Unduh
+                                    </a>
+                                <?php else: ?>
+                                    <span class="text-muted">Tidak ada bukti</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
                                 <a href="payment_view.php?payment_id=<?= $result['payment_id']; ?>" class="btn btn-action btn-sm" data-bs-toggle="tooltip" title="Lihat Detail">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="payment_edit.php?payment_id=<?= $result['payment_id']; ?>" class="btn btn-action btn-sm" data-bs-toggle="tooltip" title="Edit Pembayaran">
+                                <a href="payment_updated.php?payment_id=<?= $result['payment_id']; ?>" class="btn btn-action btn-sm" data-bs-toggle="tooltip" title="Edit Pembayaran">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <a href="payment_action.php?action=delete&payment_id=<?= $result['payment_id']; ?>" class="btn btn-action btn-sm delete-btn" data-bs-toggle="tooltip" title="Hapus Pembayaran">
@@ -305,7 +318,6 @@ $name = $_SESSION['name'];
                 </table>
             </div>
         </div>
-    </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

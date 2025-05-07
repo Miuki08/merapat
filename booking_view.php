@@ -198,7 +198,7 @@ $name = $_SESSION['name'];
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-custom" href="#">
+                        <a class="nav-link nav-link-custom" href="payment_view.php">
                             <i class="fas fa-wallet me-2"></i>Pembayaran
                         </a>
                     </li>

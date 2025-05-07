@@ -49,11 +49,12 @@ if (isset($_GET['action'])) {
             break;
         
         case 'update':
-            if (isset($_POST['booking_id'], $_POST['room_id'], $_POST['start_time'], 
+            if (isset($_POST['booking_id'], $_POST['room_id'], $_POST['user_id'], $_POST['start_time'], 
                 $_POST['end_time'], $_POST['status'], $_POST['total_price'])) {
                 
                 $Booking->booking_id = $_POST['booking_id'];
                 $Booking->room_id = $_POST['room_id'];
+                $Booking->user_id = $_POST['user_id'];
                 $Booking->start_time = $_POST['start_time'];
                 $Booking->end_time = $_POST['end_time'];
                 $Booking->status = $_POST['status'];

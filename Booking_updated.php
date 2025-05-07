@@ -28,6 +28,7 @@ if (isset($_GET['booking_id'])) {
     
     if ($data) {
         $booking_id = $data['booking_id'];
+        $user_id = $data['user_id'];
         $room_id = $data['room_id'];
         $start_time = $data['start_time'];
         $end_time = $data['end_time'];
@@ -92,6 +93,7 @@ if (isset($_GET['booking_id'])) {
                     
                     <input type="hidden" name="booking_id" value="<?= $booking_id ?>">
                     <input type="hidden" name="room_id" value="<?= $room_id ?>">
+                    <input type="hidden" name="user_id" value="<?= $user_id ?>">
 
                     <div class="mb-4">
                         <label class="form-label">Start Time</label>

@@ -56,10 +56,10 @@ $dp_amount = $booking_data['total_price'] * $dp_percentage;
 
 // QR code images for each payment method
 $qr_codes = [
-    'DANA' => 'qrcode_dana.png',
-    'BCA' => 'qrcode_bca.png',
-    'GOPAY' => 'qrcode_gopay.png',
-    'MANDIRI' => 'qrcode_mandiri.png'
+    'DANA' => 'dana.jpg',
+    'BCA' => 'dana.jpg',
+    'GOPAY' => 'dana.jpg',
+    'MANDIRI' => 'dana.jpg'
 ];
 ?>
 
@@ -224,6 +224,67 @@ $qr_codes = [
             font-size: 0.9em;
             color: #7f8c8d;
         }
+
+        .file-input-container {
+            position: relative;
+            margin-top: 10px;
+        }
+        /* file style */
+        /* File input container */
+        .file-input-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        /* Custom file input styling */
+        .custom-file-input {
+            display: none; /* Hide the default input */
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            background-color: #f8f9fa;
+            border: 2px dashed #9c27b0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            color: #6a1b9a;
+        }
+
+        .file-input-label:hover {
+            background-color: #f0e6f5;
+            border-color: #6a1b9a;
+        }
+
+        .file-input-label i {
+            margin-right: 10px;
+            font-size: 1.2em;
+            color: #9c27b0;
+        }
+
+        /* File name display */
+        .file-name {
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #6a1b9a;
+            text-align: center;
+            word-break: break-all;
+        }
+
+        /* Button style for when file is selected */
+        .file-selected {
+            background-color: #e8f5e9;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+
+        .file-selected i {
+            color: #4caf50;
+        }
     </style>
 </head>
 <body>
@@ -267,7 +328,14 @@ $qr_codes = [
                 <p>Jika terdapat surat resmi lampirkan sebagai halaman setelahnya</p>
                 <div class="field">
                     <label for="user_file">Upload File Perjanjian disini</label>
-                    <input type="file" name="user_file" id="user_file" required>
+                    <div class="file-input-container">
+                        <input type="file" name="user_file" id="user_file" class="custom-file-input" required>
+                        <label for="user_file" class="file-input-label" id="fileInputLabel">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Klik untuk mengunggah file atau drag file ke sini</span>
+                        </label>
+                        <div class="file-name" id="fileName"></div>
+                    </div>
                 </div>
                 <div class="field">
                     <label for="payment_method">Pilih Metode Pembayaran</label>
@@ -323,6 +391,41 @@ $qr_codes = [
                 // Hide the QR code container if no method is selected
                 qrCodeContainer.style.display = 'none';
             }
+        });
+
+        document.getElementById('user_file').addEventListener('change', function(e) {
+        const fileName = e.target.files[0] ? e.target.files[0].name : 'Belum ada file dipilih';
+        document.getElementById('fileName').textContent = fileName;
+        
+        const fileInputLabel = document.getElementById('fileInputLabel');
+            if (e.target.files.length > 0) {
+                fileInputLabel.classList.add('file-selected');
+                fileInputLabel.innerHTML = `<i class="fas fa-check-circle"></i><span>File dipilih</span>`;
+            } else {
+                fileInputLabel.classList.remove('file-selected');
+                fileInputLabel.innerHTML = `<i class="fas fa-cloud-upload-alt"></i><span>Klik untuk mengunggah file atau drag file ke sini</span>`;
+            }
+        });
+
+        // Drag and drop functionality
+        const fileInputLabel = document.getElementById('fileInputLabel');
+        
+        fileInputLabel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileInputLabel.style.backgroundColor = '#f0e6f5';
+        });
+        
+        fileInputLabel.addEventListener('dragleave', () => {
+            fileInputLabel.style.backgroundColor = '#f8f9fa';
+        });
+        
+        fileInputLabel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileInputLabel.style.backgroundColor = '#f8f9fa';
+            document.getElementById('user_file').files = e.dataTransfer.files;
+            // Trigger the change event manually
+            const event = new Event('change');
+            document.getElementById('user_file').dispatchEvent(event);
         });
     </script>
 </body>

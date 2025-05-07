@@ -28,12 +28,29 @@ if ($room_id === 0) {
 }
 
 require_once 'meeting_admin.php';
-$tanggapan = new Meet();
-$room = $tanggapan->getRoomByID($room_id);
+require_once 'review.php'; // Include the Review class
+
+$meeting = new Meet();
+$review = new Review(); // Create Review instance
+$room = $meeting->getRoomByID($room_id);
 
 if (!$room) {
     header("Location: UI_listpage.php");
     exit();
+}
+
+// Handle review submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'], $_POST['review'])) {
+    $review->user_id = $user_id;
+    $review->room_id = $room_id;
+    $review->rating = intval($_POST['rating']);
+    $review->review_text = $_POST['review'];
+    
+    if ($review->add()) {
+        echo "<script>alert('Review berhasil dikirim!');</script>";
+    } else {
+        echo "<script>alert('Gagal mengirim review.');</script>";
+    }
 }
 ?>
 
@@ -374,10 +391,14 @@ if (!$room) {
         </div>
     </section>
     <section class="review">
+        <h2 style="text-align: center; margin-bottom: 30px; color: #6a1b9a;">Berikan Review Anda</h2>
         <form action="" method="post">
+            <input type="hidden" name="room_id" value="<?= $room_id ?>">
+            <input type="hidden" name="user_id" value="<?= $user_id ?>">
+            
             <div class="star">
                 <div class="star-rating">
-                    <input type="radio" id="star5" name="rating" value="5" />
+                    <input type="radio" id="star5" name="rating" value="5" required />
                     <label for="star5" title="5 stars">★</label>
                     <input type="radio" id="star4" name="rating" value="4" />
                     <label for="star4" title="4 stars">★</label>
@@ -390,13 +411,43 @@ if (!$room) {
                 </div>
             </div>
             <div class="pendapat">
-                <label for="review">Tuliskan Reviewmu</label>
-                <textarea name="review" id="review"></textarea>
+                <label for="review">Bagaimana pengalaman Anda menggunakan ruangan ini?</label>
+                <textarea name="review" id="review" required></textarea>
             </div>
             <div class="goo">
-                <input type="submit" value="Kirim">
+                <input type="submit" value="Kirim Review">
             </div>
         </form>
+
+        <!-- Display existing reviews -->
+        <div class="existing-reviews" style="margin-top: 50px;">
+            <h3 style="color: #6a1b9a; margin-bottom: 20px;">Review Pengguna Lain</h3>
+            <?php
+            $reviews = $review->getReviewsByRoomId($room_id);
+            if ($reviews->num_rows > 0) {
+                while ($row = $reviews->fetch_assoc()) {
+                    echo '<div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">';
+                    echo '<div style="display: flex; justify-content: space-between; margin-bottom: 10px;">';
+                    echo '<strong>' . htmlspecialchars($row['user_name'] ?? 'Anonymous') . '</strong>';
+                    echo '<div style="color: gold;">';
+                    for ($i = 0; $i < 5; $i++) {
+                        echo $i < $row['rating'] ? '★' : '☆';
+                    }
+                    echo '</div>';
+                    echo '</div>';
+                    echo '<p>' . nl2br(htmlspecialchars($row['review_text'])) . '</p>';
+                    if (!empty($row['response'])) {
+                        echo '<div style="background: #f8f9fa; padding: 10px; border-left: 3px solid #6a1b9a; margin-top: 10px;">';
+                        echo '<strong>Respon Admin:</strong> ' . nl2br(htmlspecialchars($row['response']));
+                        echo '</div>';
+                    }
+                    echo '</div>';
+                }
+            } else {
+                echo '<p style="text-align: center; color: #666;">Belum ada review untuk ruangan ini.</p>';
+            }
+            ?>
+        </div>
     </section>
     <script>
         const roomPricePerHour = <?= $room['total_price']; ?>;
