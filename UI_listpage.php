@@ -6,13 +6,10 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Cek apakah role user adalah customer
 if ($_SESSION['role'] != 'customer') {
-    // Jika bukan customer, redirect ke dashboard yang sesuai
     if ($_SESSION['role'] == 'manager' || $_SESSION['role'] == 'officer') {
         header("Location: dasboard.php");
     } else {
-        // Role tidak dikenali, redirect ke halaman login
         header("Location: user_login_register.php");
     }
     exit();
@@ -29,11 +26,12 @@ $name = $_SESSION['name'];
     <link rel="shortcut icon" href="logoweb.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Cinzel+Decorative:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <title>MERAPAT | LAMAN RUANGAN</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
+            background-color: #F1E9E9;
             margin: 0;
             padding: 0;
         }
@@ -41,16 +39,17 @@ $name = $_SESSION['name'];
         /* Header Sticky */
         header {
             width: 100%;
-            background: linear-gradient(135deg, #6a1b9a, #9c27b0);
+            background: linear-gradient(135deg, #4A002A, #6a1b9a);
             color: white;
             padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(106,27,154,0.2);
+            box-shadow: 0 2px 10px rgba(74, 0, 42, 0.2);
             position: sticky;
             top: 0;
             z-index: 1000;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative;
         }
 
         /* Sidebar */
@@ -59,8 +58,8 @@ $name = $_SESSION['name'];
             height: 100vh;
             position: fixed;
             top: 0;
-            left: -250px; /* Sidebar hidden by default */
-            background-color: #fff;
+            left: -250px;
+            background-color: #F1E9E9;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             z-index: 999;
@@ -68,22 +67,24 @@ $name = $_SESSION['name'];
         }
 
         .sidebar.open {
-            left: 0; /* Sidebar visible */
+            left: 0;
         }
 
         .sidebar .nav-link {
-            color: #2c3e50;
+            color: #4A002A;
             text-decoration: none;
             display: flex;
             align-items: center;
             padding: 15px 20px;
             border-radius: 12px;
             transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
         }
 
         .sidebar .nav-link:hover {
-            background-color: #9c27b0;
-            color: white;
+            background-color: #C2AE6D;
+            color: #4A002A;
             transform: translateX(10px);
         }
 
@@ -118,6 +119,7 @@ $name = $_SESSION['name'];
         .card1:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(156,39,176,0.1);
+            border-color: #C2AE6D;
         }
 
         .card1 img {
@@ -126,17 +128,19 @@ $name = $_SESSION['name'];
             object-fit: cover;
             border-radius: 10px;
             margin-bottom: 15px;
+            border: 2px solid #C2AE6D;
         }
 
         .card1 h3 {
             margin: 0 0 10px 0;
-            color: #2c3e50;
+            color: #4A002A;
             font-size: 1.2em;
+            font-family: 'Cinzel Decorative', serif;
         }
 
         .card1 p {
             margin: 5px 0;
-            color: #7f8c8d;
+            color: #4B4B4B;
             font-size: 0.9em;
         }
 
@@ -171,34 +175,124 @@ $name = $_SESSION['name'];
 
         .search-form input[type="text"] {
             width: 100%;
-            max-width: 600px; /* Lebar maksimum input search */
+            max-width: 600px;
             padding: 10px 20px;
             border: none;
             border-radius: 25px;
             font-size: 16px;
             transition: all 0.3s ease;
             background-color: rgba(255,255,255,0.9);
+            font-family: 'Poppins', sans-serif;
         }
 
         .search-form input[type="text"]:focus {
             outline: none;
-            box-shadow: 0 0 10px rgba(156,39,176,0.3);
+            box-shadow: 0 0 10px rgba(74, 0, 42, 0.2);
+            border: 1px solid #C2AE6D;
         }
 
         .search-form button {
             padding: 10px 20px;
             border: none;
-            background-color: #7b1fa2;
+            background-color: #4A002A;
             color: white;
             border-radius: 25px;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-left: 10px;
+            font-family: 'Poppins', sans-serif;
         }
 
         .search-form button:hover {
-            background-color: #9c27b0;
+            background-color: #6a1b9a;
             transform: translateY(-1px);
+        }
+
+        /* IMPROVED DROPDOWN STYLES */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            background-color: transparent !important;
+            border: 2px solid #C2AE6D !important;
+            color: white !important;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dropdown-toggle::after {
+            margin-left: 8px;
+            vertical-align: middle;
+            border-top-color: #C2AE6D;
+        }
+
+        .dropdown-toggle:hover {
+            background-color: rgba(194, 174, 109, 0.2) !important;
+            transform: translateY(-2px);
+        }
+
+        .dropdown-menu {
+            background-color: #4A002A;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            padding: 10px 0;
+            min-width: 200px;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 5px;
+            z-index: 1001;
+        }
+
+        .dropdown-item {
+            color: white !important;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(194, 174, 109, 0.3) !important;
+            color: #C2AE6D !important;
+            padding-left: 25px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                left: -250px;
+            }
+            .sidebar.open {
+                left: 0;
+            }
+            .sidebar.open + .main-content {
+                margin-left: 0;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .search-form {
+                width: 100%;
+                margin: 10px 0;
+            }
         }
     </style>
 </head>
@@ -207,15 +301,16 @@ $name = $_SESSION['name'];
         <button class="btn btn-light sidebar-toggle"><i class="fas fa-bars"></i></button>
         <form method="GET" action="" class="search-form d-flex align-items-center">
             <input type="text" name="keyword" class="form-control" placeholder="Cari ruangan..." value="<?= isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '' ?>">
-            <button type="submit" class="btn btn-light">
+            <button type="submit" class="btn">
                 <i class="fas fa-search"></i>
             </button>
         </form>
         <div class="dropdown">
-            <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+            <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle"></i>
                 <?php echo htmlspecialchars($name); ?>
             </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                 <li><a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
             </ul>
         </div>

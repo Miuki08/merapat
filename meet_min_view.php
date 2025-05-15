@@ -241,7 +241,7 @@ body {
                         <?php echo htmlspecialchars($name); ?>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#">
+                        <li><a class="dropdown-item" href="users_session_update.php">
                             <i class="fas fa-user-cog me-2"></i>Profile
                         </a></li>
                         <li><a class="dropdown-item" href="User_add.php">

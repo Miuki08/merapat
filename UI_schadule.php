@@ -6,7 +6,6 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Cek apakah role user adalah customer
 if ($_SESSION['role'] != 'customer') {
     if ($_SESSION['role'] == 'manager' || $_SESSION['role'] == 'officer') {
         header("Location: dasboard.php");
@@ -16,11 +15,9 @@ if ($_SESSION['role'] != 'customer') {
     exit();
 }
 
-// Include required classes
 require_once 'booking.php';
 require_once 'payment.php';
 
-// Handle payment notifications
 $notification = '';
 $alert_class = '';
 if (isset($_GET['payment'])) {
@@ -39,11 +36,9 @@ if (isset($_GET['payment'])) {
 $name = $_SESSION['name'];
 $user_id = $_SESSION['user_id'];
 
-// Initialize classes
 $booking = new booking();
 $payment = new Payment();
 
-// Get bookings with payment status
 $result = $booking->getBookingsByUserId($user_id);
 ?>
 <!DOCTYPE html>
@@ -54,11 +49,12 @@ $result = $booking->getBookingsByUserId($user_id);
     <link rel="shortcut icon" href="logoweb.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <title>MERAPAT | Schedule</title>
+    <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Cinzel+Decorative:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>MERAPAT | Daftar Pesanan</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
+            background-color: #F1E9E9;
             margin: 0;
             padding: 0;
         }
@@ -66,16 +62,17 @@ $result = $booking->getBookingsByUserId($user_id);
         /* Header Sticky */
         header {
             width: 100%;
-            background: linear-gradient(135deg, #6a1b9a, #9c27b0);
+            background: linear-gradient(135deg, #4A002A, #6a1b9a);
             color: white;
             padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(106,27,154,0.2);
+            box-shadow: 0 2px 10px rgba(74, 0, 42, 0.2);
             position: sticky;
             top: 0;
             z-index: 1000;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative;
         }
 
         /* Sidebar */
@@ -84,8 +81,8 @@ $result = $booking->getBookingsByUserId($user_id);
             height: 100vh;
             position: fixed;
             top: 0;
-            left: -250px; /* Sidebar hidden by default */
-            background-color: #fff;
+            left: -250px;
+            background-color: #F1E9E9;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             z-index: 999;
@@ -93,22 +90,24 @@ $result = $booking->getBookingsByUserId($user_id);
         }
 
         .sidebar.open {
-            left: 0; /* Sidebar visible */
+            left: 0;
         }
 
         .sidebar .nav-link {
-            color: #2c3e50;
+            color: #4A002A;
             text-decoration: none;
             display: flex;
             align-items: center;
             padding: 15px 20px;
             border-radius: 12px;
             transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
         }
 
         .sidebar .nav-link:hover {
-            background-color: #9c27b0;
-            color: white;
+            background-color: #C2AE6D;
+            color: #4A002A;
             transform: translateX(10px);
         }
 
@@ -153,7 +152,8 @@ $result = $booking->getBookingsByUserId($user_id);
 
         .carto:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(156,39,176,0.1);
+            box-shadow: 0 10px 20px rgba(74, 0, 42, 0.1);
+            border-color: #C2AE6D;
         }
 
         .carto img {
@@ -162,6 +162,7 @@ $result = $booking->getBookingsByUserId($user_id);
             object-fit: cover;
             border-radius: 10px;
             margin-right: 20px;
+            border: 2px solid #C2AE6D;
         }
 
         .carto-content {
@@ -170,14 +171,15 @@ $result = $booking->getBookingsByUserId($user_id);
 
         .carto h2 {
             margin: 0 0 10px 0;
-            color: #2c3e50;
-            font-size: 1.2em;
+            color: #4A002A;
+            font-size: 1.3em;
+            font-family: 'Cinzel Decorative', serif;
         }
 
         .carto p {
             margin: 5px 0;
-            color: #7f8c8d;
-            font-size: 0.9em;
+            color: #4B4B4B;
+            font-size: 0.95em;
             display: flex;
             justify-content: space-between;
             max-width: 400px;
@@ -185,7 +187,7 @@ $result = $booking->getBookingsByUserId($user_id);
 
         .carto p span:first-child {
             font-weight: 600;
-            color: #2c3e50;
+            color: #4A002A;
         }
 
         .status-indicator {
@@ -199,7 +201,7 @@ $result = $booking->getBookingsByUserId($user_id);
         }
 
         /* Button Styling */
-        .cancel-btn, .payment-btn {
+        .cancel-btn, .payment-btn, .delete-btn {
             padding: 8px 15px;
             border: none;
             border-radius: 5px;
@@ -208,6 +210,7 @@ $result = $booking->getBookingsByUserId($user_id);
             margin-top: 10px;
             display: inline-flex;
             align-items: center;
+            font-family: 'Poppins', sans-serif;
         }
 
         .cancel-btn {
@@ -217,18 +220,30 @@ $result = $booking->getBookingsByUserId($user_id);
 
         .cancel-btn:hover {
             background-color: #c0392b;
+            transform: translateY(-2px);
         }
 
         .payment-btn {
-            background-color: #27ae60;
+            background-color: #4A002A;
             color: white;
         }
 
         .payment-btn:hover {
-            background-color: #219653;
+            background-color: #6a1b9a;
+            transform: translateY(-2px);
         }
 
-        .cancel-btn i, .payment-btn i {
+        .delete-btn {
+            background-color: #7f8c8d;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background-color: #6c7a7d;
+            transform: translateY(-2px);
+        }
+
+        .cancel-btn i, .payment-btn i, .delete-btn i {
             margin-right: 5px;
         }
 
@@ -236,11 +251,16 @@ $result = $booking->getBookingsByUserId($user_id);
         .no-bookings {
             text-align: center;
             padding: 40px;
-            color: #7f8c8d;
+            color: #4B4B4B;
             font-size: 1.2em;
         }
 
-        /* Kadang Gak Di ACC Admin> */
+        .no-bookings i {
+            color: #C2AE6D;
+            margin-bottom: 15px;
+        }
+
+        /* Cancelled booking style */
         .carto.cancelled {
             opacity: 0.7;
             background-color: #f5f5f5;
@@ -255,37 +275,130 @@ $result = $booking->getBookingsByUserId($user_id);
             color: #95a5a6 !important;
         }
 
-        .delete-btn {
-            background-color: #7f8c8d;
-            color: white;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        /* IMPROVED DROPDOWN STYLES */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            background-color: transparent !important;
+            border: 2px solid #C2AE6D !important;
+            color: white !important;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 500;
             transition: all 0.3s ease;
-            margin-top: 10px;
-            display: inline-flex;
+            display: flex;
             align-items: center;
+            gap: 8px;
         }
 
-        .delete-btn:hover {
-            background-color: #6c7a7d;
+        .dropdown-toggle::after {
+            margin-left: 8px;
+            vertical-align: middle;
+            border-top-color: #C2AE6D;
         }
 
-        .delete-btn i {
-            margin-right: 5px;
+        .dropdown-toggle:hover {
+            background-color: rgba(194, 174, 109, 0.2) !important;
+            transform: translateY(-2px);
+        }
+
+        .dropdown-menu {
+            background-color: #4A002A;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            padding: 10px 0;
+            min-width: 200px;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 5px;
+            z-index: 1001;
+        }
+
+        .dropdown-item {
+            color: white !important;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(194, 174, 109, 0.3) !important;
+            color: #C2AE6D !important;
+            padding-left: 25px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .sidebar {
+                left: -250px;
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+            
+            .sidebar.open + .main-content {
+                margin-left: 0;
+            }
+            
+            .carto {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .carto img {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            .carto p {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .carto p span {
+                width: 100%;
+                text-align: center;
+                margin-bottom: 5px;
+            }
+            
+            .notification-container {
+                width: 90%;
+                left: 5%;
+                right: 5%;
+            }
         }
     </style>
 </head>
 <body>
     <header>
         <button class="btn btn-light sidebar-toggle"><i class="fas fa-bars"></i></button>
-        <h1 style="margin: 0; flex-grow: 1; text-align: center;">Bookingan Kamu</h1>
+        <h1 style="margin: 0; flex-grow: 1; text-align: center; font-family: 'Cinzel Decorative', serif;">Daftar Pesanan</h1>
         <div class="dropdown">
-            <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+            <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle"></i>
                 <?php echo htmlspecialchars($name); ?>
             </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                 <li><a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
             </ul>
         </div>
@@ -331,7 +444,6 @@ $result = $booking->getBookingsByUserId($user_id);
                     $status = $row['status'];
                     $is_paid = $payment->isPaid($row['booking_id']);
                     
-                    // Set status colors and classes
                     if ($status == 'confirmed') {
                         $status_color = '#27ae60';
                         $card_class = 'carto';
@@ -413,7 +525,7 @@ $result = $booking->getBookingsByUserId($user_id);
             <?php
                 }
             } else {
-                echo '<div class="no-bookings"><i class="fas fa-calendar-times fa-2x" style="margin-bottom: 15px;"></i><p>Tidak ada pesanan yang ditemukan.</p></div>';
+                echo '<div class="no-bookings"><i class="fas fa-calendar-times fa-3x"></i><p>Tidak ada pesanan yang ditemukan.</p></div>';
             }
             ?>
         </div>

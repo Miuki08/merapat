@@ -3,19 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="homepage.css" type="text/css">
     <link rel="shortcut icon" href="logoweb.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Cinzel+Decorative:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <title>MERAPAT | LAMAN PEMBUKA</title>
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #F1E9E9;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            background: linear-gradient(135deg, #4A002A, #6a1b9a);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(74, 0, 42, 0.3);
+        }
+
+        .open, .login {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .open a, .login a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+        }
+
+        .open a:hover, .login a:hover {
+            background-color: rgba(194, 174, 109, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Home Section */
+        .home {
+            height: 100vh;
+            background: linear-gradient(rgba(74, 0, 42, 0.7), rgba(106,27,154,0.7)), url('rm1.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 1s ease;
+        }
+
+        .overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .halo {
+            text-align: center;
+            color: white;
+            z-index: 1;
+            max-width: 800px;
+            padding: 2rem;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.8s ease;
+        }
+
+        .halo.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .halo h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-family: 'Cinzel Decorative', serif;
+        }
+
+        .halo p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .halo a {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background-color: #C2AE6D;
+            color: #4A002A;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(194, 174, 109, 0.4);
+        }
+
+        .halo a:hover {
+            transform: translateY(-3px);
+            background-color: #d8c47e;
+        }
+
+        /* Model Section */
+        .model-penarik {
+            padding: 5rem 5%;
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+            background-color: white;
+        }
+
+        .model-container {
+            flex: 1;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(74, 0, 42, 0.1);
+        }
+
+        .text-container {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .text-container h1 {
+            color: #4A002A;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            font-family: 'Cinzel Decorative', serif;
+        }
+
+        .text-container p {
+            color: #4B4B4B;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        /* Comment Section */
+        .comment {
+            padding: 5rem 5%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            background-color: #F1E9E9;
+        }
+
+        .com1 {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(74, 0, 42, 0.05);
+            border: 2px solid transparent;
+        }
+
+        .com1:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(74, 0, 42, 0.1);
+            border-color: #C2AE6D;
+        }
+
+        .com1 img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 1.5rem;
+            border: 3px solid #C2AE6D;
+        }
+
+        .com1 h2 {
+            color: #4A002A;
+            margin-bottom: 1rem;
+            font-family: 'Cinzel Decorative', serif;
+        }
+
+        .com1 p {
+            color: #4B4B4B;
+            font-style: italic;
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(135deg, #4A002A, #6a1b9a);
+            color: white;
+            padding: 4rem 5%;
+            text-align: center;
+        }
+
+        .text-open {
+            max-width: 800px;
+            margin: 0 auto 2rem;
+        }
+
+        .text-open h3 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            font-family: 'Cinzel Decorative', serif;
+        }
+
+        .text-open p {
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .ingfo {
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding-top: 2rem;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .model-penarik {
+                flex-direction: column;
+            }
+            
+            .halo h1 {
+                font-size: 2.5rem;
+            }
+            
+            header {
+                padding: 1rem 5%;
+            }
+            
+            .open, .login {
+                gap: 1rem;
+            }
+        }
+    </style>
 </head>
 <body onload="masuk()">
     <header>
         <ul class="open">
-            <li><a href="homepage.html">Home</a></li>
-            <li><a href="listpage.html ">Daftar Ruangan</a></li>
-            <li><a href="aboutpage.html">Daftar Jadwal</a></li>
+            <li><a href="homepage.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="listpage.html"><i class="fas fa-list"></i> Daftar Ruangan</a></li>
+            <li><a href="aboutpage.html"><i class="fas fa-calendar"></i> Daftar Jadwal</a></li>
         </ul>
         <ul class="login">
-            <li><a href="User_login_register.php">Login</a></li>
+            <li><a href="User_login_register.php"><i class="fas fa-sign-in-alt"></i> Login</a></li>
         </ul>
     </header>
     <section class="home">
@@ -26,7 +267,7 @@
                 Apakah Anda mencari ruang rapat yang nyaman, modern, dan lengkap untuk kebutuhan bisnis Anda? MERAPAT adalah solusi terbaik untuk Anda! 
                 Kami menawarkan berbagai pilihan ruang rapat dengan fasilitas terkini yang siap mendukung kesuksesan pertemuan Anda.
             </p>
-            <a href="User_login_register.php">Mulai Menjelajah!</a>
+            <a href="User_login_register.php"><i class="fas fa-arrow-right"></i> Mulai Menjelajah!</a>
         </div>
     </section>
     <section class="model-penarik">
@@ -48,21 +289,21 @@
     </section>
     <section class="comment">
         <div class="com1">
-            <img src="lo3.jpg" alt="">
+            <img src="lo3.jpg" alt="Customer 1">
             <h2>Rianita Anandi</h2>
             <p>
                 Aku sangat puas dengan pelayanannya!!!
             </p>
         </div>
         <div class="com1">
-            <img src="log1.jpg" alt="">
+            <img src="log1.jpg" alt="Customer 2">
             <h2>Andi Wismanda</h2>
             <p>
                 Bakal terus pesen di sini, karena ruangannya rapih, dan ditambah fasilitasnya komplit.
             </p>
         </div>
         <div class="com1">
-            <img src="log2.jpg" alt="">
+            <img src="log2.jpg" alt="Customer 3">
             <h2>Alenka Alia</h2>
             <p>
                 Otiwi sukses rapatku!!!
@@ -77,12 +318,12 @@
                 Kami menantikan kehadiran Anda!
             </p>
         </div>
-        <p> Email : merapatgoo@gmail.com   |   Nomor Telephon : +62 85814303273 </p>
+        <p><i class="fas fa-envelope"></i> Email : merapatgoo@gmail.com   |   <i class="fas fa-phone"></i> Nomor Telephon : +62 85814303273 </p>
     </footer>
 </body>
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 <script>
-    let images = ["url('rm1.jpg')", "url('rm2.jpg')", "url('rm3.jpg')"];
+    let images = ["url('ro1.jpg')", "url('ro2.jpg')", "url('ro3.jpg')"];
     let current = 0;
 
     function changeBackground() {

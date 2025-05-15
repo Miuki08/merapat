@@ -6,13 +6,10 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Cek apakah role user adalah customer
 if ($_SESSION['role'] != 'customer') {
-    // Jika bukan customer, redirect ke dashboard yang sesuai
     if ($_SESSION['role'] == 'manager' || $_SESSION['role'] == 'officer') {
         header("Location: dasboard.php");
     } else {
-        // Role tidak dikenali, redirect ke halaman login
         header("Location: user_login_register.php");
     }
     exit();
@@ -27,34 +24,27 @@ if ($booking_id === 0) {
     exit();
 }
 
-// Include class booking dan meeting
 require_once 'booking.php';
 require_once 'meeting_admin.php';
 
-// Ambil data booking
 $booking = new booking();
 $booking_data = $booking->getBookingById($booking_id);
 
-// Pastikan booking ini milik user yang login
 if (!$booking_data || $booking_data['user_id'] != $user_id) {
     header("Location: UI_scadule.php");
     exit();
 }
 
-// Ambil data ruangan
 $meet = new Meet();
 $room = $meet->getRoomByID($booking_data['room_id']);
 
-// Format tanggal dan waktu
 $start_time = date('d M Y H:i', strtotime($booking_data['start_time']));
 $end_time = date('H:i', strtotime($booking_data['end_time']));
 $booking_period = $start_time . ' - ' . $end_time;
 
-// Hitung DP (misalnya 30% dari total harga)
-$dp_percentage = 0.3; // 30%
+$dp_percentage = 0.3;
 $dp_amount = $booking_data['total_price'] * $dp_percentage;
 
-// QR code images for each payment method
 $qr_codes = [
     'DANA' => 'dana.jpg',
     'BCA' => 'dana.jpg',
@@ -71,22 +61,30 @@ $qr_codes = [
     <link rel="shortcut icon" href="logoweb.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Cinzel+Decorative:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <title>MERAPAT | PAYMENT</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F1E9E9;
+            color: #4A002A;
+            margin-top: 70px;
+        }
+
+        /* Header Styles */
         header {
             width: 100%;
-            background: linear-gradient(135deg, #6a1b9a, #9c27b0);
+            background: linear-gradient(135deg, #4A002A, #6a1b9a);
             color: white;
             padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(106,27,154,0.2);
-            position: sticky;
+            box-shadow: 0 2px 10px rgba(74, 0, 42, 0.2);
+            position: fixed;
             top: 0;
             z-index: 1000;
             display: flex;
@@ -94,13 +92,13 @@ $qr_codes = [
             align-items: center;
         }
 
-        header .header-left {
+        .header-left {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        header .header-left button {
+        .header-left button {
             background: none;
             border: none;
             color: white;
@@ -108,11 +106,13 @@ $qr_codes = [
             cursor: pointer;
         }
 
-        header .header-left h1 {
+        .header-left h1 {
             margin: 0;
             font-size: 1.5em;
+            font-family: 'Cinzel Decorative', serif;
         }
 
+        /* Main Content */
         section {
             display: flex;
             justify-content: space-between;
@@ -120,170 +120,290 @@ $qr_codes = [
             gap: 30px;
         }
 
-        section .information {
+        /* Information Card */
+        .information {
             flex: 1;
             background-color: white;
             border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            padding: 20px;
+            padding: 25px;
             text-align: center;
+            border: 1px solid #F1E9E9;
         }
 
-        section .information img {
+        .information:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border-color: #C2AE6D;
+        }
+
+        .information img {
             width: 100%;
             max-width: 300px;
             border-radius: 15px;
             margin-bottom: 20px;
+            border: 3px solid #C2AE6D;
         }
 
-        section .information h2 {
+        .information h2 {
             font-size: 1.5em;
-            color: #2c3e50;
+            color: #4A002A;
             margin-bottom: 15px;
+            font-family: 'Cinzel Decorative', serif;
         }
 
-        section .information p {
+        .information p {
             font-size: 1em;
-            color: #7f8c8d;
+            color: #4B4B4B;
             margin: 10px 0;
         }
 
-        section .form {
+        .dp-amount {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4A002A;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #F1E9E9;
+            border-radius: 8px;
+            border: 1px dashed #C2AE6D;
+        }
+
+        /* Form Styles */
+        .form {
             flex: 1;
             background-color: white;
             border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            padding: 20px;
+            padding: 25px;
+            border: 1px solid #F1E9E9;
         }
 
-        section .form p {
+        .form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border-color: #C2AE6D;
+        }
+
+        .form p {
             font-size: 1em;
-            color: #2c3e50;
+            color: #4A002A;
             margin-bottom: 15px;
         }
 
-        section .form .field {
+        .form a {
+            color: #6a1b9a;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .form a:hover {
+            color: #4A002A;
+            text-decoration: underline;
+        }
+
+        .field {
             margin-bottom: 20px;
         }
 
-        section .form .field label {
+        .field label {
             display: block;
             font-size: 1em;
-            color: #2c3e50;
-            margin-bottom: 5px;
+            color: #4A002A;
+            margin-bottom: 8px;
+            font-weight: 500;
         }
 
-        section .form .field input,
-        section .form .field select {
+        .field input,
+        .field select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
+            padding: 12px;
+            border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 1em;
+            transition: all 0.3s ease;
         }
 
-        section .form button {
+        .field input:focus,
+        .field select:focus {
+            border-color: #C2AE6D;
+            outline: none;
+        }
+
+        button[type="submit"] {
             width: 100%;
-            padding: 10px;
-            background-color: #9c27b0;
+            padding: 12px;
+            background-color: #4A002A;
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 1em;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        section .form button:hover {
-            background-color: #6a1b9a;
-        }
-        
-        .dp-amount {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #27ae60;
+            transition: all 0.3s ease;
             margin-top: 10px;
         }
-        
+
+        button[type="submit"]:hover {
+            background-color: #6a1b9a;
+            transform: translateY(-2px);
+        }
+
+        /* QR Code Container */
         .qr-code-container {
             text-align: center;
             margin-top: 20px;
             display: none;
+            padding: 15px;
+            background-color: #F1E9E9;
+            border-radius: 8px;
+            border: 1px solid #C2AE6D;
         }
-        
+
         .qr-code-container img {
             max-width: 200px;
-            border: 1px solid #ddd;
             border-radius: 8px;
             padding: 10px;
             background: white;
         }
-        
+
         .qr-code-container p {
             margin-top: 10px;
             font-size: 0.9em;
-            color: #7f8c8d;
+            color: #4B4B4B;
         }
 
-        .file-input-container {
-            position: relative;
-            margin-top: 10px;
-        }
-        /* file style */
-        /* File input container */
+        /* File Input Styling */
         .file-input-container {
             position: relative;
             margin-bottom: 20px;
         }
 
-        /* Custom file input styling */
         .custom-file-input {
-            display: none; /* Hide the default input */
+            display: none;
         }
 
         .file-input-label {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 12px 20px;
-            background-color: #f8f9fa;
-            border: 2px dashed #9c27b0;
+            padding: 15px;
+            background-color: #F1E9E9;
+            border: 2px dashed #C2AE6D;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-align: center;
-            color: #6a1b9a;
+            color: #4A002A;
         }
 
         .file-input-label:hover {
-            background-color: #f0e6f5;
-            border-color: #6a1b9a;
+            background-color: #e8e0c5;
         }
 
         .file-input-label i {
             margin-right: 10px;
             font-size: 1.2em;
-            color: #9c27b0;
+            color: #4A002A;
         }
 
-        /* File name display */
         .file-name {
             margin-top: 8px;
             font-size: 0.9em;
-            color: #6a1b9a;
+            color: #4A002A;
             text-align: center;
             word-break: break-all;
         }
 
-        /* Button style for when file is selected */
         .file-selected {
             background-color: #e8f5e9;
-            border-color: #4caf50;
-            color: #2e7d32;
+            border-color: #4A002A;
+            color: #4A002A;
         }
 
         .file-selected i {
-            color: #4caf50;
+            color: #4A002A;
+        }
+
+        /* Dropdown Styles */
+        .dropdown-toggle {
+            background-color: transparent !important;
+            border: 2px solid #C2AE6D !important;
+            color: white !important;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dropdown-toggle::after {
+            margin-left: 8px;
+            vertical-align: middle;
+            border-top-color: #C2AE6D;
+        }
+
+        .dropdown-toggle:hover {
+            background-color: rgba(194, 174, 109, 0.2) !important;
+            transform: translateY(-2px);
+        }
+
+        .dropdown-menu {
+            background-color: #4A002A;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            padding: 10px 0;
+            min-width: 200px;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 5px;
+            z-index: 1001;
+        }
+
+        .dropdown-item {
+            color: white !important;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(194, 174, 109, 0.3) !important;
+            color: #C2AE6D !important;
+            padding-left: 25px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            section {
+                flex-direction: column;
+                padding: 20px;
+            }
+            
+            .information, .form {
+                max-width: 100%;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .header-left {
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -291,54 +411,56 @@ $qr_codes = [
     <header>
         <div class="header-left">
             <button onclick="window.history.back()"><i class="fa-solid fa-arrow-left"></i></button>
-            <h1>Membayar Booking Room</h1>
+            <h1>Pembayaran Booking</h1>
         </div>
         <div class="dropdown">
-            <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+            <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle"></i>
                 <?php echo htmlspecialchars($name); ?>
             </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                 <li><a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
             </ul>
         </div>
     </header>
+    
     <section>
         <div class="information">
-            <img src="rm1.jpg" alt="ruangan yang kamu pesan">
+            <img src="rm1.jpg" alt="<?= htmlspecialchars($room['room_name']); ?>">
             <h2>Detail Pemesanan</h2>
-            <p>Nama Pemesan: <?php echo htmlspecialchars($name); ?></p>
-            <p>Ruangan Yang Dipesan: <?php echo htmlspecialchars($room['room_name']); ?></p>
-            <p>Lokasi: <?php echo htmlspecialchars($room['location']); ?></p>
-            <p>Tanggal dan Waktu: <?php echo $booking_period; ?></p>
-            <p>Durasi: <?php 
-                $duration = (strtotime($booking_data['end_time']) - strtotime($booking_data['start_time'])) / 3600;
-                echo ceil($duration) . ' jam';
-            ?></p>
-            <p>Total Harga: Rp. <?php echo number_format($booking_data['total_price'], 0, ',', '.'); ?></p>
+            <p>Nama Pemesan: <?= htmlspecialchars($name); ?></p>
+            <p>Ruangan: <?= htmlspecialchars($room['room_name']); ?></p>
+            <p>Lokasi: <?= htmlspecialchars($room['location']); ?></p>
+            <p>Tanggal/Waktu: <?= $booking_period; ?></p>
+            <p>Durasi: <?= ceil((strtotime($booking_data['end_time']) - strtotime($booking_data['start_time'])) / 3600); ?> jam</p>
+            <p>Total Harga: Rp. <?= number_format($booking_data['total_price'], 0, ',', '.'); ?></p>
             <div class="dp-amount">
-                DP Yang Harus Dibayar: Rp. <?php echo number_format($dp_amount, 0, ',', '.'); ?>
+                DP (30%): Rp. <?= number_format($dp_amount, 0, ',', '.'); ?>
             </div>
         </div>
+        
         <div class="form">
             <form action="payment_action.php?action=add" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
-                <input type="hidden" name="amount" value="<?php echo $dp_amount; ?>">
+                <input type="hidden" name="booking_id" value="<?= $booking_id; ?>">
+                <input type="hidden" name="amount" value="<?= $dp_amount; ?>">
                 
-                <p>Download file Perjanjian <a href="README.MD" download="">klik disini</a> pastikan isi semua data yang ada di dalamnya</p>
-                <p>Jika terdapat surat resmi lampirkan sebagai halaman setelahnya</p>
+                <p>Download file Perjanjian <a href="README.MD" download>klik disini</a> dan isi semua data yang diperlukan</p>
+                <p>Lampirkan surat resmi (jika ada) sebagai halaman berikutnya</p>
+                
                 <div class="field">
-                    <label for="user_file">Upload File Perjanjian disini</label>
+                    <label for="user_file">Upload File Perjanjian</label>
                     <div class="file-input-container">
                         <input type="file" name="user_file" id="user_file" class="custom-file-input" required>
                         <label for="user_file" class="file-input-label" id="fileInputLabel">
                             <i class="fas fa-cloud-upload-alt"></i>
-                            <span>Klik untuk mengunggah file atau drag file ke sini</span>
+                            <span>Klik untuk mengunggah file</span>
                         </label>
                         <div class="file-name" id="fileName"></div>
                     </div>
                 </div>
+                
                 <div class="field">
-                    <label for="payment_method">Pilih Metode Pembayaran</label>
+                    <label for="payment_method">Metode Pembayaran</label>
                     <select name="payment_method" id="payment_method" required>
                         <option value="">-- Pilih Metode --</option>
                         <option value="DANA">DANA</option>
@@ -348,62 +470,44 @@ $qr_codes = [
                     </select>
                 </div>
                 
-                <!-- QR Code Container -->
                 <div id="qrCodeContainer" class="qr-code-container">
                     <img id="qrCodeImage" src="" alt="QR Code">
-                    <p id="qrCodeInstruction">Scan QR code untuk melakukan pembayaran</p>
+                    <p id="qrCodeInstruction">Scan QR code untuk pembayaran</p>
                 </div>
                 
-                <button type="submit">Bayar</button>
+                <button type="submit">Bayar Sekarang</button>
             </form>
         </div>
     </section>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
     <script>
+        // Payment method QR code display
         document.getElementById('payment_method').addEventListener('change', function() {
             const paymentMethod = this.value;
             const qrCodeContainer = document.getElementById('qrCodeContainer');
             const qrCodeImage = document.getElementById('qrCodeImage');
             
             if (paymentMethod) {
-                // Show the QR code container
                 qrCodeContainer.style.display = 'block';
-                
-                // Set the appropriate QR code image based on payment method
-                switch(paymentMethod) {
-                    case 'DANA':
-                        qrCodeImage.src = 'dana.jpg';
-                        break;
-                    case 'BCA':
-                        qrCodeImage.src = 'dana.jpg';
-                        break;
-                    case 'GOPAY':
-                        qrCodeImage.src = 'dana.jpg';
-                        break;
-                    case 'MANDIRI':
-                        qrCodeImage.src = 'dana.jpg';
-                        break;
-                    default:
-                        qrCodeContainer.style.display = 'none';
-                }
+                qrCodeImage.src = 'dana.jpg'; // All methods use same image in this example
             } else {
-                // Hide the QR code container if no method is selected
                 qrCodeContainer.style.display = 'none';
             }
         });
 
+        // File input styling
         document.getElementById('user_file').addEventListener('change', function(e) {
-        const fileName = e.target.files[0] ? e.target.files[0].name : 'Belum ada file dipilih';
-        document.getElementById('fileName').textContent = fileName;
-        
-        const fileInputLabel = document.getElementById('fileInputLabel');
+            const fileName = e.target.files[0] ? e.target.files[0].name : 'Belum ada file dipilih';
+            document.getElementById('fileName').textContent = fileName;
+            
+            const fileInputLabel = document.getElementById('fileInputLabel');
             if (e.target.files.length > 0) {
                 fileInputLabel.classList.add('file-selected');
                 fileInputLabel.innerHTML = `<i class="fas fa-check-circle"></i><span>File dipilih</span>`;
             } else {
                 fileInputLabel.classList.remove('file-selected');
-                fileInputLabel.innerHTML = `<i class="fas fa-cloud-upload-alt"></i><span>Klik untuk mengunggah file atau drag file ke sini</span>`;
+                fileInputLabel.innerHTML = `<i class="fas fa-cloud-upload-alt"></i><span>Klik untuk mengunggah file</span>`;
             }
         });
 
@@ -412,18 +516,17 @@ $qr_codes = [
         
         fileInputLabel.addEventListener('dragover', (e) => {
             e.preventDefault();
-            fileInputLabel.style.backgroundColor = '#f0e6f5';
+            fileInputLabel.style.backgroundColor = '#e8e0c5';
         });
         
         fileInputLabel.addEventListener('dragleave', () => {
-            fileInputLabel.style.backgroundColor = '#f8f9fa';
+            fileInputLabel.style.backgroundColor = '#F1E9E9';
         });
         
         fileInputLabel.addEventListener('drop', (e) => {
             e.preventDefault();
-            fileInputLabel.style.backgroundColor = '#f8f9fa';
+            fileInputLabel.style.backgroundColor = '#F1E9E9';
             document.getElementById('user_file').files = e.dataTransfer.files;
-            // Trigger the change event manually
             const event = new Event('change');
             document.getElementById('user_file').dispatchEvent(event);
         });
